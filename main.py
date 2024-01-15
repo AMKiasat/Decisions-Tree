@@ -1,6 +1,8 @@
+from sklearn.model_selection import train_test_split
 from sklearn import datasets
 import numpy as np
 import math
+import pickle
 
 
 def entropy_calculator(x):
@@ -77,7 +79,6 @@ def grow_tree(x, y, offset_num):
     lc = [np.count_nonzero(y == 0), np.count_nonzero(y == 1), np.count_nonzero(y == 2)]
     # print(y)
     if size - np.max(lc) <= offset_num:
-        print(y)
         return np.argmax(lc)
     best_split = find_best_split(x, y, entropy_calculator(label_count))
     left_x = []
@@ -98,11 +99,44 @@ def grow_tree(x, y, offset_num):
     return left, best_split[1], best_split[2], right
 
 
+def train(data, label, offset_num):
+    tree = grow_tree(data, label, offset_num=offset_num)
+    print(tree)
+
+    with open('tree.pkl', 'wb') as file:
+        pickle.dump(tree, file)
+
+
+def predict(x, tree):
+    if isinstance(tree, np.int64):
+        return tree
+    elif x[tree[1]] <= tree[2]:
+        return predict(x, tree[0])
+    else:
+        return predict(x, tree[3])
+
+
+def test(data):
+    with open('tree.pkl', 'rb') as file:
+        loaded_tree = pickle.load(file)
+    prediction = []
+    for i in data:
+        prediction.append(predict(i, loaded_tree))
+    return prediction
+
+
 if __name__ == '__main__':
     iris = datasets.load_iris()
     data = iris.data
     label = iris.target
-    # for i in range(len(data)):
-    #     print(i, data[i])
+    train_data, test_data, train_labels, test_labels = train_test_split(data, label, test_size=0.2, random_state=1)
 
-    print(grow_tree(data, label, offset_num=5))
+    train(train_data, train_labels, offset_num=5)
+
+    predictions = test(test_data)
+    # print(predictions)
+    correct = 0
+    for i in range(len(test_labels)):
+        if predictions[i] == test_labels[i]:
+            correct += 1
+    print(correct, len(test_labels), correct / len(test_labels))
