@@ -1,16 +1,22 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from sklearn import datasets
+import numpy as np
+import math
 
 
-# Press the green button in the gutter to run the script.
+def entropy_calculator(x):
+    entropy = 0
+    for i in x:
+        entropy += -1 * (i * math.log2(i))
+    return entropy
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    iris = datasets.load_iris()
+    data = iris.data
+    label = iris.target
+    size = len(label)
+    label_count = [np.count_nonzero(label == 0) / size,
+                   np.count_nonzero(label == 1) / size,
+                   np.count_nonzero(label == 2) / size]
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    print(entropy_calculator(label_count))
