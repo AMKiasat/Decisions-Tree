@@ -11,6 +11,14 @@ def entropy_calculator(x):
     return entropy
 
 
+# def most_repeated_int(arr):
+#     unique_elements, counts = np.unique(arr, return_counts=True)
+#     max_count_index = np.argmax(counts)
+#     most_repeated = unique_elements[max_count_index]
+#
+#     return [most_repeated, max_count_index]
+
+
 def spliter(feature, threshold):
     left_indices = np.where(feature <= threshold)[0]
     right_indices = np.where(feature > threshold)[0]
@@ -61,18 +69,40 @@ def find_best_split(x, y, y_entropy):
     return best_gain_ratio
 
 
-def grow_tree(x, y):
+def grow_tree(x, y, offset_num):
     size = len(y)
     label_count = [np.count_nonzero(y == 0) / size,
                    np.count_nonzero(y == 1) / size,
                    np.count_nonzero(y == 2) / size]
-    print(find_best_split(x, y, entropy_calculator(label_count)))
+    lc = [np.count_nonzero(y == 0), np.count_nonzero(y == 1), np.count_nonzero(y == 2)]
+    # print(y)
+    if size - np.max(lc) <= offset_num:
+        print(y)
+        return np.argmax(lc)
+    best_split = find_best_split(x, y, entropy_calculator(label_count))
+    left_x = []
+    left_y = []
+    right_x = []
+    right_y = []
+    for i in range(len(x)):
+        if x[i][best_split[1]] <= best_split[2]:
+            left_x.append(x[i])
+            left_y.append(y[i])
+        else:
+            right_x.append(x[i])
+            right_y.append(y[i])
+    # print(best_split[2], len(left_x), len(right_x))
+    left = grow_tree(np.array(left_x), np.array(left_y), offset_num)
+    right = grow_tree(np.array(right_x), np.array(right_y), offset_num)
+
+    return left, best_split[1], best_split[2], right
 
 
 if __name__ == '__main__':
     iris = datasets.load_iris()
     data = iris.data
     label = iris.target
-    for i in range(len(data)):
-        print(i, data[i])
-    grow_tree(data, label)
+    # for i in range(len(data)):
+    #     print(i, data[i])
+
+    print(grow_tree(data, label, offset_num=5))
