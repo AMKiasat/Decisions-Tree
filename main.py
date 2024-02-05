@@ -42,7 +42,7 @@ def label_counter(indices, y):
                 count1 += 1
             elif i in y2[0]:
                 count2 += 1
-        return [count0 / len(indices), count1 / len(indices), count1 / len(indices)]
+        return [count0 / len(indices), count1 / len(indices), count2 / len(indices)]
     else:
         return [0]
 
@@ -68,6 +68,8 @@ def find_best_split(x, y, y_entropy):
                 if gain_ratio > best_gain_ratio[0]:
                     best_gain_ratio = [gain_ratio, feature, value]
                     # print(best_gain_ratio)
+                # elif gain_ratio == best_gain_ratio[0]:
+                #     print([gain_ratio, feature, value])
     return best_gain_ratio
 
 
@@ -79,6 +81,7 @@ def grow_tree(x, y, offset_num):
     lc = [np.count_nonzero(y == 0), np.count_nonzero(y == 1), np.count_nonzero(y == 2)]
     # print(y)
     if size - np.max(lc) <= offset_num:
+        # print(size, np.max(lc))
         return np.argmax(lc)
     best_split = find_best_split(x, y, entropy_calculator(label_count))
     left_x = []
@@ -92,7 +95,7 @@ def grow_tree(x, y, offset_num):
         else:
             right_x.append(x[i])
             right_y.append(y[i])
-    # print(best_split[2], len(left_x), len(right_x))
+    # print(best_split, len(left_x), len(right_x))
     left = grow_tree(np.array(left_x), np.array(left_y), offset_num)
     right = grow_tree(np.array(right_x), np.array(right_y), offset_num)
 
@@ -129,9 +132,10 @@ if __name__ == '__main__':
     iris = datasets.load_iris()
     data = iris.data
     label = iris.target
-    train_data, test_data, train_labels, test_labels = train_test_split(data, label, test_size=0.2, random_state=1)
+    train_data, test_data, train_labels, test_labels = train_test_split(data, label, test_size=0.5, random_state=1)
+    # print(data)
 
-    train(train_data, train_labels, offset_num=5)
+    train(train_data, train_labels, offset_num=0)
 
     predictions = test(test_data)
     # print(predictions)
